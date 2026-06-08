@@ -34,11 +34,7 @@ TEST = tests/main.c
 TEST_BIN = test
 
 test: $(NAME)
-	@$(CC) $(CFLAGS) $(TEST) -L . -lft -o $(TEST_BIN)
-	@./$(TEST_BIN)
-
-test-clean:fclean
-	@$(RM) $(TEST_BIN) $(TEST_BIN).d
+	bash tests/3tester.sh
 # --------------------------------------- #
 
 .PHONY: all clean fclean re

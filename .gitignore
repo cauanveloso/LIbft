@@ -26,3 +26,5 @@ objects
 libft.a
 *.d
 test
+#logs from my test
+logs
