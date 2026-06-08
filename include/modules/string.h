@@ -1,4 +1,4 @@
-#ifndef	STTRING_H
+#ifndef	STRING_H
 # define STRING_H
 
 char	*ft_strchr(const char *s, int c);

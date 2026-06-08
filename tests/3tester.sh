@@ -8,9 +8,10 @@
 # ============================================================
 
 LOG_DIR="logs"
-TEST_DIR="testscripts"
+TEST_DIR="tests/testscripts"
 TMP_MAIN="main_test.c"
 TMP_BIN="test_bin"
+SRCS=$(find src -name "*.c")
 PASSOU=0
 FALHOU=0
 SEM_TESTE=0
@@ -23,7 +24,7 @@ rm -f *.o
 echo "🧪 Rodando testes da libft..."
 echo "----------------------------------------"
 
-for src in ft_*.c; do
+for src in $SRCS; do
 	if [ ! -f "$src" ]; then
 		continue
 	fi
@@ -40,7 +41,7 @@ for src in ft_*.c; do
 
 	cp "$txt" "$TMP_MAIN"
 
-	cc -Wall -Wextra -Werror "$TMP_MAIN" ft_*.c -o "$TMP_BIN" \
+	cc -Wall -Wextra -Werror "$TMP_MAIN" libft.a -I include -o "$TMP_BIN" \
 		> "$log" 2>&1
 
 	if [ $? -ne 0 ]; then
