@@ -20,9 +20,6 @@ objects/%.o: src/%.c
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 # ---------------- TESTS ---------------- #
-TEST = tests/main.c
-TEST_BIN = test
-
 test: $(NAME)
 	bash tests/3tester.sh
 # --------------------------------------- #
