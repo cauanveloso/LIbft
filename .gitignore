@@ -23,8 +23,11 @@ rad.json
 TestResults.xml
 #objects from my libary
 objects
+#static library
 libft.a
+#all archives .d
 *.d
+#archive test
 test
 #logs from my test
 logs
