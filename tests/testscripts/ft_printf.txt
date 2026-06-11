@@ -1,0 +1,236 @@
+#include "libft.h"
+#include <stdio.h>
+#include <limits.h>
+
+int	main(void)
+{
+	int		ft_ret;
+	int		orig_ret;
+	int		n;
+	char	*null_str;
+
+	n = 42;
+	null_str = NULL;
+
+	/*
+		String simples
+	*/
+	printf("Test: simple string\n");
+
+	printf("FT  : ");
+	ft_ret = ft_printf("Hello World");
+	printf("\n");
+
+	printf("ORIG: ");
+	orig_ret = printf("Hello World");
+	printf("\n");
+
+	printf("FT  : %d\n", ft_ret);
+	printf("ORIG: %d\n", orig_ret);
+	printf("\n");
+
+	/*
+		%c
+	*/
+	printf("Test: %%c\n");
+
+	printf("FT  : ");
+	ft_ret = ft_printf("%c %c %c", 'A', 'B', 'C');
+	printf("\n");
+
+	printf("ORIG: ");
+	orig_ret = printf("%c %c %c", 'A', 'B', 'C');
+	printf("\n");
+
+	printf("FT  : %d\n", ft_ret);
+	printf("ORIG: %d\n", orig_ret);
+	printf("\n");
+
+	/*
+		%s
+	*/
+	printf("Test: %%s\n");
+
+	printf("FT  : ");
+	ft_ret = ft_printf("%s %s", "Hello", "42");
+	printf("\n");
+
+	printf("ORIG: ");
+	orig_ret = printf("%s %s", "Hello", "42");
+	printf("\n");
+
+	printf("FT  : %d\n", ft_ret);
+	printf("ORIG: %d\n", orig_ret);
+	printf("\n");
+
+	/*
+		%s com NULL
+	*/
+	printf("Test: %%s NULL\n");
+
+	printf("FT  : ");
+	ft_ret = ft_printf("%s", null_str);
+	printf("\n");
+
+	printf("ORIG: ");
+	orig_ret = printf("%s", null_str);
+	printf("\n");
+
+	printf("FT  : %d\n", ft_ret);
+	printf("ORIG: %d\n", orig_ret);
+	printf("\n");
+
+	/*
+		%d e %i
+	*/
+	printf("Test: %%d %%i\n");
+
+	printf("FT  : ");
+	ft_ret = ft_printf("%d %i %d", 42, -42, 0);
+	printf("\n");
+
+	printf("ORIG: ");
+	orig_ret = printf("%d %i %d", 42, -42, 0);
+	printf("\n");
+
+	printf("FT  : %d\n", ft_ret);
+	printf("ORIG: %d\n", orig_ret);
+	printf("\n");
+
+	/*
+		INT_MAX e INT_MIN
+	*/
+	printf("Test: INT_MAX INT_MIN\n");
+
+	printf("FT  : ");
+	ft_ret = ft_printf("%d %d", INT_MAX, INT_MIN);
+	printf("\n");
+
+	printf("ORIG: ");
+	orig_ret = printf("%d %d", INT_MAX, INT_MIN);
+	printf("\n");
+
+	printf("FT  : %d\n", ft_ret);
+	printf("ORIG: %d\n", orig_ret);
+	printf("\n");
+
+	/*
+		%u
+	*/
+	printf("Test: %%u\n");
+
+	printf("FT  : ");
+	ft_ret = ft_printf("%u %u", 0U, UINT_MAX);
+	printf("\n");
+
+	printf("ORIG: ");
+	orig_ret = printf("%u %u", 0U, UINT_MAX);
+	printf("\n");
+
+	printf("FT  : %d\n", ft_ret);
+	printf("ORIG: %d\n", orig_ret);
+	printf("\n");
+
+	/*
+		%x e %X
+	*/
+	printf("Test: %%x %%X\n");
+
+	printf("FT  : ");
+	ft_ret = ft_printf("%x %X", 255, 255);
+	printf("\n");
+
+	printf("ORIG: ");
+	orig_ret = printf("%x %X", 255, 255);
+	printf("\n");
+
+	printf("FT  : %d\n", ft_ret);
+	printf("ORIG: %d\n", orig_ret);
+	printf("\n");
+
+	/*
+		hexadecimal com zero
+	*/
+	printf("Test: hex zero\n");
+
+	printf("FT  : ");
+	ft_ret = ft_printf("%x %X", 0, 0);
+	printf("\n");
+
+	printf("ORIG: ");
+	orig_ret = printf("%x %X", 0, 0);
+	printf("\n");
+
+	printf("FT  : %d\n", ft_ret);
+	printf("ORIG: %d\n", orig_ret);
+	printf("\n");
+
+	/*
+		%p
+	*/
+	printf("Test: %%p\n");
+
+	printf("FT  : ");
+	ft_ret = ft_printf("%p", &n);
+	printf("\n");
+
+	printf("ORIG: ");
+	orig_ret = printf("%p", &n);
+	printf("\n");
+
+	printf("FT  : %d\n", ft_ret);
+	printf("ORIG: %d\n", orig_ret);
+	printf("\n");
+
+	/*
+		%p NULL
+	*/
+	printf("Test: %%p NULL\n");
+
+	printf("FT  : ");
+	ft_ret = ft_printf("%p", NULL);
+	printf("\n");
+
+	printf("ORIG: ");
+	orig_ret = printf("%p", NULL);
+	printf("\n");
+
+	printf("FT  : %d\n", ft_ret);
+	printf("ORIG: %d\n", orig_ret);
+	printf("\n");
+
+	/*
+		%%
+	*/
+	printf("Test: %%%%\n");
+
+	printf("FT  : ");
+	ft_ret = ft_printf("%%");
+	printf("\n");
+
+	printf("ORIG: ");
+	orig_ret = printf("%%");
+	printf("\n");
+
+	printf("FT  : %d\n", ft_ret);
+	printf("ORIG: %d\n", orig_ret);
+	printf("\n");
+
+	/*
+		Misturado
+	*/
+	printf("Test: mixed\n");
+
+	printf("FT  : ");
+	ft_ret = ft_printf("%s %d %x %c %%", "test", 42, 255, 'A');
+	printf("\n");
+
+	printf("ORIG: ");
+	orig_ret = printf("%s %d %x %c %%", "test", 42, 255, 'A');
+	printf("\n");
+
+	printf("FT  : %d\n", ft_ret);
+	printf("ORIG: %d\n", orig_ret);
+
+	return (0);
+}
