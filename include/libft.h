@@ -17,6 +17,7 @@ extern "C"
 #include "modules/list.h"
 #include "modules/memory.h"
 #include "modules/string.h"
+#include "modules/ft_printf.h"
 
 # ifdef __cplusplus
 }
