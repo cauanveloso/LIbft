@@ -13,6 +13,7 @@ TMP_MAIN="main_test.c"
 TMP_BIN="test_bin"
 SRCS=$(find src -name "*.c" ! -path "src/extra/ft_printf/auxiliar_functions/*")
 SEM_TESTE_LIST=""
+FALHA_LIST=""
 PASSOU=0
 FALHOU=0
 SEM_TESTE=0
@@ -47,7 +48,7 @@ for src in $SRCS; do
 		> "$log" 2>&1
 
 	if [ $? -ne 0 ]; then
-		echo "❌ COMPILA   : $nome"
+		FALHAS_LIST="$FALHAS_LIST\n❌ COMPILA : $nome"
 		tmp_log=$(cat "$log")
 		echo "=== ERRO DE COMPILACAO ===" > "$log"
 		echo "$tmp_log" >> "$log"
@@ -60,7 +61,7 @@ for src in $SRCS; do
 	status_exec=$?
 
 	if [ "$status_exec" -ne 0 ]; then
-		echo "💥 CRASH     : $nome"
+		FALHAS_LIST="$FALHAS_LIST\n💥 CRASH   : $nome"
 		echo "" >> "$log"
 		echo "=== RESULTADO: CRASH / ERRO DE EXECUCAO ===" >> "$log"
 		echo "Exit status: $status_exec" >> "$log"
@@ -73,7 +74,7 @@ for src in $SRCS; do
 	raw_orig=$(grep -a "^ORIG:" "$log")
 
 	if [ -z "$raw_ft" ] || [ -z "$raw_orig" ]; then
-		echo "⚠️  FORMATO  : $nome (faltam linhas FT/ORIG)"
+		FALHAS_LIST="$FALHAS_LIST\n⚠️ FORMATO : $nome"
 		echo "" >> "$log"
 		echo "=== RESULTADO: FORMATO INVALIDO ===" >> "$log"
 		FALHOU=$((FALHOU + 1))
@@ -104,7 +105,7 @@ for src in $SRCS; do
 		echo "=== RESULTADO: PASSOU ===" >> "$log"
 		PASSOU=$((PASSOU + 1))
 	else
-		echo "❌ FALHOU    : $nome"
+		FALHAS_LIST="$FALHAS_LIST\n❌ FALHOU  : $nome"
 		echo "" >> "$log"
 		echo "=== RESULTADO: FALHOU ===" >> "$log"
 		echo "$raw_ft" >> "$log"
@@ -119,6 +120,12 @@ rm -f "$TMP_MAIN" "$TMP_BIN"
 rm -f *.o
 
 echo "----------------------------------------"
+
+if [ "$FALHOU" -gt 0 ]; then
+	echo "❌ Arquivos com problemas:"
+	echo -e "$FALHAS_LIST"
+	echo ""
+fi
 
 if [ "$SEM_TESTE" -gt 0 ]; then
 	echo "⚪ Arquivos sem teste:"
