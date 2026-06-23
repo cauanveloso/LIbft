@@ -11,7 +11,8 @@ LOG_DIR="logs"
 TEST_DIR="tests/testscripts"
 TMP_MAIN="main_test.c"
 TMP_BIN="test_bin"
-SRCS=$(find src -name "*.c")
+SRCS=$(find src -name "*.c" ! -path "src/extra/ft_printf/auxiliar_functions/*")
+SEM_TESTE_LIST=""
 PASSOU=0
 FALHOU=0
 SEM_TESTE=0
@@ -34,9 +35,10 @@ for src in $SRCS; do
 	log="$LOG_DIR/$nome.log"
 
 	if [ ! -f "$txt" ]; then
-		echo "⚪ SEM TESTE : $nome"
+		SEM_TESTE_LIST="$SEM_TESTE_LIST\n⚪ $nome"
 		SEM_TESTE=$((SEM_TESTE + 1))
 		continue
+
 	fi
 
 	cp "$txt" "$TMP_MAIN"
@@ -117,9 +119,14 @@ rm -f "$TMP_MAIN" "$TMP_BIN"
 rm -f *.o
 
 echo "----------------------------------------"
+
+if [ "$SEM_TESTE" -gt 0 ]; then
+	echo "⚪ Arquivos sem teste:"
+	echo -e "$SEM_TESTE_LIST"
+	echo ""
+fi
+
 echo "🏁 Testes concluídos!"
 echo "   ✅ Passou     : $PASSOU"
 echo "   ❌ Falhou     : $FALHOU"
 echo "   ⚪ Sem teste  : $SEM_TESTE"
-echo ""
-echo "📂 Logs salvos em: $LOG_DIR/"
