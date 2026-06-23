@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void	print_str(char *label, char *str)
+static void	print_string(char *label, char *str)
 {
 	if (!str)
 		printf("%s(NULL)\n", label);
@@ -32,8 +32,8 @@ static void	test_copia_normal(void)
 	printf("      copia deve ter mesmo conteudo e endereco diferente\n");
 	printf("      entrada : s=\"Hello, World!\"\n");
 	printf("      esperado: \"Hello, World!\"\n");
-	print_str("FT  : ", ft_r);
-	print_str("ORIG: ", orig_r);
+	print_string("FT  : ", ft_r);
+	print_string("ORIG: ", orig_r);
 	free(ft_r);
 	free(orig_r);
 	printf("\n");
@@ -88,8 +88,8 @@ static void	test_um_char(void)
 	printf("      menor string nao vazia possivel\n");
 	printf("      entrada : s=\"a\"\n");
 	printf("      esperado: \"a\"\n");
-	print_str("FT  : ", ft_r);
-	print_str("ORIG: ", orig_r);
+	print_string("FT  : ", ft_r);
+	print_string("ORIG: ", orig_r);
 	free(ft_r);
 	free(orig_r);
 }
