@@ -12,6 +12,7 @@ int	main(void)
 	n = 42;
 	null_str = NULL;
 
+	setbuf(stdout, NULL);
 	/*
 		String simples
 	*/
