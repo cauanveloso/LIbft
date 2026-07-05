@@ -1,0 +1,285 @@
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#ifndef GNL_TEST_DIR
+# define GNL_TEST_DIR ".tmp_gnl_tests"
+#endif
+
+char	*get_next_line(int fd);
+
+static int	g_fail = 0;
+
+static void	build_path(char *dst, size_t size, const char *file)
+{
+	snprintf(dst, size, "%s/%s", GNL_TEST_DIR, file);
+}
+
+static int	open_test_file(const char *file)
+{
+	char	path[4096];
+	int		fd;
+
+	build_path(path, sizeof(path), file);
+	fd = open(path, O_RDONLY);
+	if (fd < 0)
+	{
+		printf("FAIL: could not open %s\n", file);
+		g_fail++;
+	}
+	return (fd);
+}
+
+static char	*repeat_char(char c, int len, int add_newline)
+{
+	char	*str;
+	int		i;
+
+	str = malloc(sizeof(char) * (len + add_newline + 1));
+	if (!str)
+		return (NULL);
+	i = 0;
+	while (i < len)
+	{
+		str[i] = c;
+		i++;
+	}
+	if (add_newline)
+		str[i++] = '\n';
+	str[i] = '\0';
+	return (str);
+}
+
+static void	expect_line(int fd, const char *expected, const char *test_name)
+{
+	char	*line;
+
+	line = get_next_line(fd);
+	if (expected == NULL)
+	{
+		if (line != NULL)
+		{
+			printf("FAIL: %s\nExpected: NULL\nGot     : %s\n",
+				test_name, line);
+			g_fail++;
+		}
+		free(line);
+		return ;
+	}
+	if (line == NULL || strcmp(line, expected) != 0)
+	{
+		printf("FAIL: %s\nExpected: %s\nGot     : %s\n",
+			test_name, expected, line ? line : "NULL");
+		g_fail++;
+	}
+	free(line);
+}
+
+static void	test_empty_file(void)
+{
+	int	fd;
+
+	fd = open_test_file("empty.txt");
+	if (fd < 0)
+		return ;
+	expect_line(fd, NULL, "empty file");
+	close(fd);
+}
+
+static void	test_single_char(void)
+{
+	int	fd;
+
+	fd = open_test_file("single_char.txt");
+	if (fd < 0)
+		return ;
+	expect_line(fd, "A", "single char");
+	expect_line(fd, NULL, "single char EOF");
+	close(fd);
+}
+
+static void	test_single_char_newline(void)
+{
+	int	fd;
+
+	fd = open_test_file("single_char_newline.txt");
+	if (fd < 0)
+		return ;
+	expect_line(fd, "A\n", "single char with newline");
+	expect_line(fd, NULL, "single char with newline EOF");
+	close(fd);
+}
+
+static void	test_only_newline(void)
+{
+	int	fd;
+
+	fd = open_test_file("only_newline.txt");
+	if (fd < 0)
+		return ;
+	expect_line(fd, "\n", "only newline");
+	expect_line(fd, NULL, "only newline EOF");
+	close(fd);
+}
+
+static void	test_multiple_lines(void)
+{
+	int	fd;
+
+	fd = open_test_file("multiple_lines.txt");
+	if (fd < 0)
+		return ;
+	expect_line(fd, "Hello\n", "multiple lines first line");
+	expect_line(fd, "World\n", "multiple lines second line");
+	expect_line(fd, "42", "multiple lines last line without newline");
+	expect_line(fd, NULL, "multiple lines EOF");
+	close(fd);
+}
+
+static void	test_no_final_newline(void)
+{
+	int	fd;
+
+	fd = open_test_file("no_final_newline.txt");
+	if (fd < 0)
+		return ;
+	expect_line(fd, "Hello", "no final newline");
+	expect_line(fd, NULL, "no final newline EOF");
+	close(fd);
+}
+
+static void	test_consecutive_newlines(void)
+{
+	int	fd;
+
+	fd = open_test_file("consecutive_newlines.txt");
+	if (fd < 0)
+		return ;
+	expect_line(fd, "\n", "first empty line");
+	expect_line(fd, "\n", "second empty line");
+	expect_line(fd, "abc\n", "line after empty lines");
+	expect_line(fd, "\n", "last empty line");
+	expect_line(fd, NULL, "consecutive newlines EOF");
+	close(fd);
+}
+
+static void	test_long_line(void)
+{
+	int		fd;
+	char	*expected_a;
+	char	*expected_b;
+
+	fd = open_test_file("long_line.txt");
+	if (fd < 0)
+		return ;
+	expected_a = repeat_char('A', 5000, 1);
+	expected_b = repeat_char('B', 3000, 0);
+	if (!expected_a || !expected_b)
+	{
+		printf("FAIL: allocation error in long line test\n");
+		g_fail++;
+		free(expected_a);
+		free(expected_b);
+		close(fd);
+		return ;
+	}
+	expect_line(fd, expected_a, "long line with newline");
+	expect_line(fd, expected_b, "long line without final newline");
+	expect_line(fd, NULL, "long line EOF");
+	free(expected_a);
+	free(expected_b);
+	close(fd);
+}
+
+static void	test_interleaved_fds(void)
+{
+	int	fd1;
+	int	fd2;
+
+	fd1 = open_test_file("interleaved_1.txt");
+	fd2 = open_test_file("interleaved_2.txt");
+	if (fd1 < 0 || fd2 < 0)
+	{
+		if (fd1 >= 0)
+			close(fd1);
+		if (fd2 >= 0)
+			close(fd2);
+		return ;
+	}
+	expect_line(fd1, "A1\n", "interleaved fd1 first line");
+	expect_line(fd2, "B1\n", "interleaved fd2 first line");
+	expect_line(fd1, "A2\n", "interleaved fd1 second line");
+	expect_line(fd2, "B2\n", "interleaved fd2 second line");
+	expect_line(fd1, NULL, "interleaved fd1 EOF");
+	expect_line(fd2, NULL, "interleaved fd2 EOF");
+	close(fd1);
+	close(fd2);
+}
+
+static void	test_invalid_fd(void)
+{
+	expect_line(-1, NULL, "invalid fd");
+}
+
+static void	test_closed_fd(void)
+{
+	int	fd;
+
+	fd = open_test_file("closed_fd.txt");
+	if (fd < 0)
+		return ;
+	close(fd);
+	expect_line(fd, NULL, "closed fd");
+}
+
+static void	test_pipe_input(void)
+{
+	int			pipefd[2];
+	const char	*text;
+
+	text = "Pipe\nInput";
+	if (pipe(pipefd) != 0)
+	{
+		printf("FAIL: pipe creation\n");
+		g_fail++;
+		return ;
+	}
+	if (write(pipefd[1], text, strlen(text)) != (ssize_t)strlen(text))
+	{
+		printf("FAIL: pipe write\n");
+		g_fail++;
+		close(pipefd[0]);
+		close(pipefd[1]);
+		return ;
+	}
+	close(pipefd[1]);
+	expect_line(pipefd[0], "Pipe\n", "pipe first line");
+	expect_line(pipefd[0], "Input", "pipe last line");
+	expect_line(pipefd[0], NULL, "pipe EOF");
+	close(pipefd[0]);
+}
+
+int	main(void)
+{
+	test_empty_file();
+	test_single_char();
+	test_single_char_newline();
+	test_only_newline();
+	test_multiple_lines();
+	test_no_final_newline();
+	test_consecutive_newlines();
+	test_long_line();
+	test_interleaved_fds();
+	test_invalid_fd();
+	test_closed_fd();
+	test_pipe_input();
+	if (g_fail != 0)
+	{
+		printf("GNL TESTS FAILED: %d\n", g_fail);
+		return (1);
+	}
+	printf("GNL TESTS PASSED\n");
+	return (0);
+}
