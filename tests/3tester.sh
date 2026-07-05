@@ -11,12 +11,109 @@ LOG_DIR="logs"
 TEST_DIR="tests/testscripts"
 TMP_MAIN="main_test.c"
 TMP_BIN="test_bin"
+
+GNL_TMP_DIR=".tmp_gnl_tests"
+GNL_MAIN="$GNL_TMP_DIR/main_gnl_test.c"
+GNL_BIN="$GNL_TMP_DIR/gnl_test_bin"
+GNL_TEST_SCRIPT="$TEST_DIR/get_next_line.txt"
+
 SRCS=$(find src -name "*.c" ! -path "src/extra/ft_printf/auxiliar_functions/*")
+
 SEM_TESTE_LIST=""
-FALHA_LIST=""
+FALHAS_LIST=""
 PASSOU=0
 FALHOU=0
 SEM_TESTE=0
+
+cleanup_gnl_tmp()
+{
+	rm -rf "$GNL_TMP_DIR"
+}
+
+trap cleanup_gnl_tmp EXIT INT TERM
+
+create_gnl_test_files()
+{
+	rm -rf "$GNL_TMP_DIR"
+	mkdir -p "$GNL_TMP_DIR"
+
+	: > "$GNL_TMP_DIR/empty.txt"
+	printf "A" > "$GNL_TMP_DIR/single_char.txt"
+	printf "A\n" > "$GNL_TMP_DIR/single_char_newline.txt"
+	printf "\n" > "$GNL_TMP_DIR/only_newline.txt"
+	printf "Hello\nWorld\n42" > "$GNL_TMP_DIR/multiple_lines.txt"
+	printf "Hello" > "$GNL_TMP_DIR/no_final_newline.txt"
+	printf "\n\nabc\n\n" > "$GNL_TMP_DIR/consecutive_newlines.txt"
+	printf "A1\nA2\n" > "$GNL_TMP_DIR/interleaved_1.txt"
+	printf "B1\nB2\n" > "$GNL_TMP_DIR/interleaved_2.txt"
+	printf "closed fd test\n" > "$GNL_TMP_DIR/closed_fd.txt"
+
+	i=0
+	while [ "$i" -lt 5000 ]; do
+		printf "A" >> "$GNL_TMP_DIR/long_line.txt"
+		i=$((i + 1))
+	done
+	printf "\n" >> "$GNL_TMP_DIR/long_line.txt"
+
+	i=0
+	while [ "$i" -lt 3000 ]; do
+		printf "B" >> "$GNL_TMP_DIR/long_line.txt"
+		i=$((i + 1))
+	done
+}
+
+run_gnl_tests()
+{
+	log="$LOG_DIR/get_next_line.log"
+
+	if ! find src -name "get_next_line*.c" -print -quit | grep -q .; then
+		return
+	fi
+
+	if [ ! -f "$GNL_TEST_SCRIPT" ]; then
+		SEM_TESTE_LIST="$SEM_TESTE_LIST\n⚪ get_next_line"
+		SEM_TESTE=$((SEM_TESTE + 1))
+		return
+	fi
+
+	create_gnl_test_files
+
+	cp "$GNL_TEST_SCRIPT" "$GNL_MAIN"
+
+	cc -Wall -Wextra -Werror "$GNL_MAIN" libft.a -I include \
+		-D"GNL_TEST_DIR=\"$GNL_TMP_DIR\"" \
+		-o "$GNL_BIN" > "$log" 2>&1
+
+	if [ $? -ne 0 ]; then
+		FALHAS_LIST="$FALHAS_LIST\n❌ COMPILA : get_next_line"
+		tmp_log=$(cat "$log")
+		echo "=== ERRO DE COMPILACAO GNL ===" > "$log"
+		echo "$tmp_log" >> "$log"
+		FALHOU=$((FALHOU + 1))
+		cleanup_gnl_tmp
+		return
+	fi
+
+	"$GNL_BIN" > "$log" 2>&1
+	status_exec=$?
+
+	if [ "$status_exec" -ne 0 ]; then
+		FALHAS_LIST="$FALHAS_LIST\n❌ FALHOU  : get_next_line"
+		echo "" >> "$log"
+		echo "=== RESULTADO: GNL FALHOU ===" >> "$log"
+		echo "Exit status: $status_exec" >> "$log"
+		FALHOU=$((FALHOU + 1))
+		cleanup_gnl_tmp
+		return
+	fi
+
+	echo "✅ PASSOU    : get_next_line"
+	echo "" >> "$log"
+	echo "=== RESULTADO: PASSOU ===" >> "$log"
+	PASSOU=$((PASSOU + 1))
+
+	cleanup_gnl_tmp
+}
 
 mkdir -p "$LOG_DIR"
 rm -f "$LOG_DIR"/*.log
@@ -32,6 +129,13 @@ for src in $SRCS; do
 	fi
 
 	nome=$(basename "$src" .c)
+
+	case "$nome" in
+		get_next_line|get_next_line_bonus|get_next_line_utils|get_next_line_utils_bonus)
+			continue
+			;;
+	esac
+
 	txt="$TEST_DIR/$nome.txt"
 	log="$LOG_DIR/$nome.log"
 
@@ -116,8 +220,11 @@ for src in $SRCS; do
 	rm -f "$TMP_MAIN" "$TMP_BIN"
 done
 
+run_gnl_tests
+
 rm -f "$TMP_MAIN" "$TMP_BIN"
 rm -f *.o
+cleanup_gnl_tmp
 
 echo "----------------------------------------"
 
